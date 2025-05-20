@@ -15,6 +15,7 @@
       // vscode 中使用 @ 别名提示用
       "@/*": ["./src/*"]
     },
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "strict": false
   }
 }

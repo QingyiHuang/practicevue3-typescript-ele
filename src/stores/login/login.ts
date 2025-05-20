@@ -1,9 +1,7 @@
 import { defineStore } from "pinia";
 import Api from "@/api/user";
-type Tobj = {
-    username: string,
-    password: string
-}
+import type { ILoginparam } from "@/types/login";
+
 const useLoginStore = defineStore('login', {
     state: () => {
         return {
@@ -17,20 +15,14 @@ const useLoginStore = defineStore('login', {
         }
     },
     actions: {
-        changeUsers(obj: Tobj) {
-
-            Api.login({
+        async changeUsers(obj: ILoginparam) {
+            const res: any = await Api.login({
                 username: obj.username,
                 password: obj.password,
             })
-                .then((res: any) => {
-                    console.log(res)
-                    this.username = res.username
-                    this.token = res.token
-                })
-                .catch((err) => {
-                    console.log(err);
-                });
+            console.log(res)
+            this.username = res.username
+            this.token = res.token
         }
     }
 })

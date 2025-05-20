@@ -49,19 +49,16 @@ import { reactive, ref, toRaw } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElMessage } from "element-plus";
 import useLoginStore from "@/stores/login/login";
-interface RuleForm {
-  username: string;
-  password: string;
-}
+import type { ILoginparam } from "@/types/login";
 
 const ruleFormRef = ref<FormInstance>();
-const ruleForm = reactive<RuleForm>({
+const ruleForm = reactive<ILoginparam>({
   username: "",
   password: "",
 });
 const rememberme = ref<boolean>(false);
 
-const rules = reactive<FormRules<RuleForm>>({
+const rules = reactive<FormRules<ILoginparam>>({
   username: [
     { required: true, message: "请输入用户名", trigger: "change" },
     { min: 3, max: 20, message: "3-20", trigger: "change" },
