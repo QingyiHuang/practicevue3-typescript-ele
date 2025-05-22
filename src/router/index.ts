@@ -1,28 +1,34 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import { defineAsyncComponent } from 'vue'
+import { createRouter, createWebHistory } from "vue-router";
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
-      redirect: '/home'
+      path: "/",
+      redirect: "/home",
     },
     {
-      path: '/login',
-      name: 'login',
-      component: defineAsyncComponent(() => import('../views/login/Login.vue')),
+      path: "/login",
+      name: "login",
+      component: () => import("../views/login/Login.vue"),
     },
     {
-      path: '/home',
-      name: 'home',
-      component: defineAsyncComponent(() => import('../views/home/Home.vue')),
+      path: "/home",
+      name: "home",
+      component: () => import("../views/home/Home.vue"),
     },
     {
-      path: '/:pathMatch(.*)*',
-      name: 'notFound',
-      component: defineAsyncComponent(() => import('../views/not_found/NotFound.vue'))
-    }
+      path: "/:pathMatch(.*)*",
+      name: "notFound",
+      component: () => import("../views/not_found/NotFound.vue"),
+    },
   ],
-})
-
-export default router
+});
+router.beforeEach((to, from) => {
+  const token = window.localStorage.getItem("token");
+  if (to.path.startsWith("/home") && !token) {
+    return {
+      path: "/login",
+    };
+  }
+});
+export default router;

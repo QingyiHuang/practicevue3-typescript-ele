@@ -1,13 +1,7 @@
 <template>
   <div class="boxouter">
     <h1>typeScript</h1>
-    <el-form
-      ref="ruleFormRef"
-      :model="ruleForm"
-      :rules="rules"
-      label-width="auto"
-      status-icon
-    >
+    <el-form ref="ruleFormRef" :model="ruleForm" :rules="rules" label-width="auto" status-icon>
       <div class="outerbox">
         <el-tabs type="border-card" class="demo-tabs" stretch>
           <el-tab-pane>
@@ -23,12 +17,7 @@
               <el-input v-model="ruleForm.username" />
             </el-form-item>
             <el-form-item label="密码" prop="password">
-              <el-input
-                v-model="ruleForm.password"
-                show-password
-                type="password"
-                autocomplete="off"
-              />
+              <el-input v-model="ruleForm.password" show-password type="password" autocomplete="off" />
             </el-form-item>
           </el-tab-pane>
           <el-tab-pane label="手机登录">=</el-tab-pane>
@@ -37,7 +26,7 @@
       <el-form-item>
         <div class="login-opt-footer">
           <el-checkbox v-model="rememberme" label="记住密码" size="large" />
-          <el-button link>忘记密码</el-button>
+          <el-button link @click="forgetPassword">忘记密码</el-button>
         </div>
       </el-form-item>
     </el-form>
@@ -45,19 +34,29 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, toRaw } from "vue";
+import { reactive, ref, toRaw, watch } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElMessage } from "element-plus";
 import useLoginStore from "@/stores/login/login";
 import type { ILoginparam } from "@/types/login";
-
+import Api from '@/api/user'
+import router from "@/router";
+import useAES from '@/hooks/useAES'
+const AESFunc = useAES()
 const ruleFormRef = ref<FormInstance>();
-const ruleForm = reactive<ILoginparam>({
-  username: "",
-  password: "",
-});
-const rememberme = ref<boolean>(false);
 
+const ruleForm = reactive<ILoginparam>({
+  username: window.localStorage.getItem('username') ? AESFunc.decrypt(window.localStorage.getItem('username'), 'hqy') : '',
+  password: window.localStorage.getItem('password') ? AESFunc.decrypt(window.localStorage.getItem('password'), 'hqy') : '',
+});
+const rememberme = ref<boolean>(window.localStorage.getItem('rememberme') ? true : false);
+watch(rememberme, (newval) => {
+  if (newval) {
+    window.localStorage.setItem('rememberme', '1')
+  } else {
+    window.localStorage.removeItem('rememberme')
+  }
+})
 const rules = reactive<FormRules<ILoginparam>>({
   username: [
     { required: true, message: "请输入用户名", trigger: "change" },
@@ -71,12 +70,34 @@ const submitForm = async (formEl: FormInstance | undefined = ruleFormRef.value) 
   if (!formEl) return;
   await formEl.validate((valid, fields) => {
     if (valid) {
-      loginStore.changeUsers(toRaw(ruleForm));
+      loginStore.changeUsers(toRaw(ruleForm)).then((res) => {
+        if (window.localStorage.getItem('rememberme')) {
+          window.localStorage.setItem("password", AESFunc.encrypt(ruleForm.password, 'hqy'));
+          window.localStorage.setItem("username", AESFunc.encrypt(ruleForm.username, 'hqy'))
+        } else {
+          window.localStorage.removeItem('rememberme')
+          window.localStorage.removeItem("username")
+        }
+        Api.getUserDetail().then((res) => {
+          console.log(res)
+          loginStore.setUserPow(res)
+          router.push({
+            path: '/home'
+          })
+        })
+
+      }).catch(err => {
+        ElMessage({
+          message: err,
+          type: "warning",
+        })
+      })
     } else {
       ElMessage({
         message: "nn" + JSON.stringify(fields),
         type: "warning",
       });
+
     }
   });
 };
@@ -86,6 +107,9 @@ const resetForm = (formEl: FormInstance | undefined = ruleFormRef.value) => {
   formEl.resetFields();
 };
 defineExpose({ submitForm, resetForm });
+const forgetPassword = () => {
+  Api.test()
+}
 </script>
 
 <style lang="less" scoped>
@@ -142,6 +166,5 @@ defineExpose({ submitForm, resetForm });
   justify-content: space-between;
 }
 
-.outerbox {
-}
+.outerbox {}
 </style>
