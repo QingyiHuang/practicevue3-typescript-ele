@@ -31,6 +31,7 @@ import { useCounterStore } from '@/stores/counter';
 import { useRouter } from 'vue-router';
 import Menus from '@/components/menus.vue';
 import { RouterView } from 'vue-router';
+
 const store = useCounterStore()
 const { connter } = toRefs(store)
 console.log(connter)
@@ -64,6 +65,7 @@ provide('isCollapse', isCollapse)
         width: 300px;
         height: 100%;
         transition: all 0.25s linear;
+        flex-shrink: 0;
     }
 
     .retractAside {

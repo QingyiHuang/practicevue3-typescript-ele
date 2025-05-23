@@ -2,6 +2,10 @@
     <div class="headerbar">
         <div class="headerLeft">
             <el-button type="default" @click="changeFold" :icon="isFold ? Fold : Expand" />
+            <el-breadcrumb separator-icon="ArrowRight">
+                <el-breadcrumb-item v-for="(item, index) in breadCrumb" :key="index">{{ item.name
+                }}</el-breadcrumb-item>
+            </el-breadcrumb>
         </div>
         <div class="headerRiht">
             <!-- <el-button @click="exit">退出登录</el-button> -->
@@ -25,7 +29,9 @@
 <script setup lang='ts'>
 import { Expand, Fold } from '@element-plus/icons-vue';
 import useLoginStore from '@/stores/login/login';
-import { ref } from 'vue';
+import type { IMenu } from '@/types/login';
+import { mapPathToBreadCrumb } from '@/utils/utils';
+import { ref, computed, toRefs } from 'vue';
 defineOptions({
     name: 'componentHeader'
 })
@@ -43,6 +49,14 @@ enum ECommand {
     EXIT = 'exit',
     EDIT = 'edit'
 }
+import { useRoute } from 'vue-router';
+const Route = useRoute()
+const menus: IMenu[] = store.userPow?.menus ?? [];
+const { path } = toRefs(Route)
+const breadCrumb = computed(() => {
+    return mapPathToBreadCrumb(path.value, menus)
+})
+console.log(breadCrumb)
 const handleCommand = (val: ECommand) => {
     switch (val) {
         case (ECommand.EDIT): edit(); break;
@@ -70,7 +84,12 @@ const edit = () => {
     align-items: center;
     background-color: #ffffff;
 
-    .headerLeft {}
+    .headerLeft {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+    }
 
     .headerRiht {
         height: 100%;

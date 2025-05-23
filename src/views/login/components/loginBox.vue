@@ -38,7 +38,7 @@ import { reactive, ref, toRaw, watch } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElMessage } from "element-plus";
 import useLoginStore from "@/stores/login/login";
-import type { ILoginparam } from "@/types/login";
+import type { ILoginparam, Ipow } from "@/types/login";
 import Api from '@/api/user'
 import router from "@/router";
 import useAES from '@/hooks/useAES'
@@ -70,7 +70,7 @@ const submitForm = async (formEl: FormInstance | undefined = ruleFormRef.value) 
   if (!formEl) return;
   await formEl.validate((valid, fields) => {
     if (valid) {
-      loginStore.changeUsers(toRaw(ruleForm)).then((res) => {
+      loginStore.changeUsers(toRaw(ruleForm)).then(() => {
         if (window.localStorage.getItem('rememberme')) {
           window.localStorage.setItem("password", AESFunc.encrypt(ruleForm.password, 'hqy'));
           window.localStorage.setItem("username", AESFunc.encrypt(ruleForm.username, 'hqy'))
@@ -78,7 +78,7 @@ const submitForm = async (formEl: FormInstance | undefined = ruleFormRef.value) 
           window.localStorage.removeItem('rememberme')
           window.localStorage.removeItem("username")
         }
-        Api.getUserDetail().then((res) => {
+        Api.getUserDetail().then((res: Ipow) => {
           console.log(res)
           loginStore.setUserPow(res)
           router.push({

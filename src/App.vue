@@ -9,11 +9,15 @@ import { RouterView } from 'vue-router'
 // //   console.log(event)
 // //   // console.log(`ScreenOrientation change: ${type}, ${angle} degrees.`);
 // // });
-
+import zhCn from "element-plus/es/locale/lang/zh-cn";
+const locale = zhCn;
 </script>
 
 <template>
-  <RouterView />
+  <el-config-provider :locale="zhCn">
+    <RouterView />
+  </el-config-provider>
+
 </template>
 
 <style lang="less" scoped>

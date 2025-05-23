@@ -14,7 +14,7 @@
                             <el-icon>
                                 <component :is="item.icon.replace(/el-icon-/, '')" />
                             </el-icon>
-                            <span>{{ item.name }}{{ item.icon }}</span>
+                            <span>{{ item.name }}{{ item.key }}</span>
                         </template>
                         <el-menu-item-group>
                             <template v-for="one in item.children" :key="one.key">
@@ -23,7 +23,7 @@
                                         <el-icon>
                                             <component :is="one.icon.replace(/el-icon-/, '')" />
                                         </el-icon>
-                                        <span>{{ one.name }}{{ one.icon }}</span>
+                                        <span>{{ one.name }}{{ one.key }}</span>
                                     </template>
                                 </el-menu-item>
                             </template>
@@ -40,29 +40,41 @@
 <script setup lang='ts'>
 import useLoginStore from '@/stores/login/login'
 import logoImg from '@/assets/logo.svg'
-import { toRaw, inject } from 'vue'
+import $bus from '@/utils/bus'
+import { toRaw, inject, ref, onMounted, onUnmounted } from 'vue'
+import { mapPathToMenu } from '@/utils/utils'
+import type { IMenu } from '@/types/login'
 defineOptions({
     name: 'commonMenus'
 })
-interface IOneMenu {
-    name: string;
-    key: string;
-    icon: string;
-}
 
-interface IMenu<T = IOneMenu> {
-    name: string;  // 改为必选
-    key: string;
-    icon: string;  // 改为必选
-    children?: T[]; // 如果不需要泛型，可以直接用 IOneMenu[]
-    // 如果需要额外属性，可以明确声明而不是用索引签名
-    [index: string]: unknown; // 最好用 unknown 而不是 any
-}
 const store = useLoginStore();
 // 更安全的访问方式
 const menus: IMenu[] = store.userPow?.menus ?? [];
-const defaultActive = menus[0]?.key || ''
-console.log(defaultActive)
+const defaultActive = ref('')
+import { useRoute } from 'vue-router'
+const Route = useRoute()
+let currentRoute = null
+currentRoute = mapPathToMenu(Route.path, menus)
+console.log(currentRoute)
+if (currentRoute) {
+    defaultActive.value = currentRoute.key
+}
+// onMounted(() => {
+//     // 若菜单数据存在且有子项，默认选中第一个子项
+//     if (menus.length > 0 && menus[0].children?.length > 0) {
+//         defaultActive.value = menus[0].children[0].key;
+//     }
+// });
+
+$bus.on('firstRoute', getRoute)
+onUnmounted(() => {
+    $bus.off('firstRoute', getRoute)
+})
+function getRoute(val) {
+    defaultActive.value = val.meta.menuCode
+    console.log(defaultActive)
+}
 const handleOpen = (key: string, keyPath: string[]) => {
     console.log(key, keyPath)
 }

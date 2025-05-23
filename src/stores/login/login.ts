@@ -5,14 +5,11 @@ import { ElNotification, ElMessage } from "element-plus";
 import useAES from "@/hooks/useAES";
 import type { RouteRecordRaw } from "vue-router";
 import { homeRouteChildren } from "@/router/power";
-import type { Imenu } from "@/types/login";
+import type { Ipow } from "@/types/login";
 import router from "@/router";
 const AESFunc = useAES();
 type UserPermission = any;
-interface Ipow {
-  pow: string;
-  menus: Imenu[];
-}
+
 const useLoginStore = defineStore("login", {
   state: () => {
     return {
@@ -54,17 +51,33 @@ const useLoginStore = defineStore("login", {
         throw new Error("登录失败");
       }
     },
-    setUserPow(val: Ipow) {
-      this.userPow = val;
-      window.sessionStorage.setItem("usePow", JSON.stringify(val));
+    setUserPow(val?: Ipow) {
+      if (val) {
+        this.userPow = val;
+        window.sessionStorage.setItem("usePow", JSON.stringify(val));
+      } else if (window.sessionStorage.getItem("usePow")) {
+        this.userPow = JSON.parse(window.sessionStorage.getItem("usePow"));
+      }
       // 动态的添加路由
-      const routeArry: RouteRecordRaw[] = homeRouteChildren;
-      console.log(routeArry);
-      for (const i of val.menus) {
-        for (const menu of i.children) {
-          const newroute = routeArry.find((item) => item.path === menu.url);
-          console.log(newroute);
-          router.addRoute("home", newroute);
+      if (this.userPow) {
+        const routeArry: RouteRecordRaw[] = homeRouteChildren;
+        console.log(routeArry);
+        // 根据请求动态添加,并记录第一个路由
+        let firstRoute: any = null;
+        for (const i of this.userPow.menus) {
+          for (const menu of i.children) {
+            const newroute = routeArry.find((item) => item.path === menu.url);
+            if (newroute) {
+              if (!firstRoute) {
+                firstRoute = newroute;
+                window.sessionStorage.setItem(
+                  "firstRoute",
+                  JSON.stringify(firstRoute)
+                );
+              }
+              router.addRoute("home", newroute);
+            }
+          }
         }
       }
     },

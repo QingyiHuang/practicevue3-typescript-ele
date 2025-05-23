@@ -25,3 +25,12 @@
     padding: 0 2rem;
   } */
 }
+.hqy-content{
+  display: flex;
+  flex-flow: column nowrap;
+  height: 100%;
+}
+.hqy-tablePart{
+  flex: 1;
+  overflow: hidden;
+}
